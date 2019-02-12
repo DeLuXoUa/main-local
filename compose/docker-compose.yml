@@ -1,0 +1,90 @@
+rocketchat:
+  image: rocketchat/rocket.chat:latest
+  environment:
+    - MONGO_URL=mongodb://mongo:27017/rocketchat
+    - ROOT_URL=https://192.168.1.51
+    - Accounts_UseDNSDomainCheck=True
+  links:
+    - mongo:mongo
+  ports:
+    - 3000:3000
+hubot:
+  image: rocketchat/hubot-rocketchat:latest
+  environment:
+    - ROCKETCHAT_URL=192.168.1.51:3000
+    - ROCKETCHAT_ROOM=GENERAL
+    - ROCKETCHAT_USER=RocketBot
+    - ROCKETCHAT_PASSWORD=@lphaSecur1ty
+    - BOT_NAME=RocketBot
+    - EXTERNAL_SCRIPTS=hubot-help,hubot-seen,hubot-links,hubot-greetings
+  links:
+    - rocketchat:rocketchat
+# this is used to expose the hubot port for notifications on the host on port 3001, e.g. for hubot-jenkins-notifier
+  ports:
+    - 3001:8080
+pg:
+  image: postgres
+  environment:
+    - POSTGRES_PASSWORD=@1pha
+    - POSTGRES_USER=root
+  volumes:
+    - /opt/docker/data/pg/db/:/var/lib/postgresql/data
+    - /var/backup/:/var/backup/
+  ports:
+    - 5432:5432
+mongo:
+#  image: mongo:3.5-jessie
+  image: mongo:latest
+  container_name: "mongodb"
+#  environment:
+#    - MONGO_DATA_DIR=/data/db
+#    - MONGO_LOG_DIR=/dev/null
+  volumes:
+    - /opt/docker/data/mongo/db:/data/db
+  ports:
+    - 27017:27017
+#  command: mongod --smallfiles --logpath=/dev/null
+percona:
+  image: percona
+  environment:
+    - MYSQL_ROOT_PASSWORD=123
+  volumes:
+    - /opt/docker/data/mysql/data:/var/lib/mysql
+  ports:
+    - 3306:3306
+elastic:
+  image: elasticsearch
+  ports:
+    - 9200:9200
+  command:
+    -Etransport.host=0.0.0.0 -Ediscovery.zen.minimum_master_nodes=1
+#    -Des.cluster.name="test" -Des.node.name="test1" -Des.network.bind_host=0.0.0.0
+  volumes:
+    - /opt/docker/data/elastic/:/usr/share/elasticsearch/data
+cerebro:
+  image: yannart/cerebro:latest
+  ports:
+    - 9000:9000
+solr:
+  image: solr:7
+  ports:
+    - 8983:8983
+  volumes:
+    - /opt/docker/data/solr/:/opt/solr/server/solr/mycores
+haproxy:
+  image: haproxy
+  ports:
+    - 80:80
+    - 443:443
+    - 9999:9999
+  volumes:
+    - /opt/docker/config/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    - /opt/docker/config/haproxy/certs/:/usr/ct/
+nginx:
+  image: nginx
+  ports:
+    - 9282:9282
+  volumes:
+    - /var/www/:/var/www/
+    - /opt/docker/config/nginx/conf.d/:/etc/nginx/conf.d
+    - /opt/docker/config/nginx/nginx.conf:/etc/nginx/nginx.conf
