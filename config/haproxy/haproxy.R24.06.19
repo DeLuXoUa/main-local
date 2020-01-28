@@ -1,0 +1,135 @@
+global
+
+defaults
+    mode http
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+
+listen stats 
+    bind *:9999
+    stats enable
+    stats uri /
+    stats auth root:@2root
+
+frontend https-in
+    bind *:443 ssl crt /usr/ct/test.fix.if.ua.pem crt /usr/ct/front.fix.if.ua.pem crt /usr/ct/dev1.pem crt /usr/ct/dev2.pem crt /usr/ct/ssv4.fix.if.ua.pem crt /usr/ct/newfront.pem crt /usr/ct/front4.fix.if.ua.pem crt /usr/ct/dev4.omnismain.com crt /usr/ct/dev6.omnismain.com  crt /usr/ct/dev7.omnismain.com
+#    acl has_web1 hdr_end(host) -i dev1.omnismain.com
+    acl has_web2 hdr_end(host) -i dev2.omnismain.com
+    acl has_web2 hdr_end(host) -i test2.lc
+    acl has_web2 hdr_end(host) -i s2.omnismain.com
+    acl has_web3 hdr_end(host) -i dev3.omnismain.com
+    acl has_web4 hdr_end(host) -i test.fix.if.ua
+    acl has_web4 hdr_end(host) -i newfront.fix.if.ua
+    acl has_web5 hdr_end(host) -i front.fix.if.ua
+    acl has_web7 hdr_end(host) -i ssv4.fix.if.ua
+    acl has_web7 hdr_end(host) -i spc4.chickenkiller.com
+    acl has_web8 hdr_end(host) -i front4.fix.if.ua
+    acl has_web9 hdr_end(host) -i dev4.omnismain.com
+    acl has_web10 hdr_end(host) -i dev6.omnismain.com
+    acl has_web11 hdr_end(host) -i dev7.omnismain.com
+
+#    use_backend web1 if has_web1
+    use_backend web2ssl if has_web2
+    use_backend web3 if has_web3
+    use_backend web4 if has_web4
+    use_backend web5ssl if has_web5
+    use_backend web7ssl if has_web7
+    use_backend web8 if has_web8
+    use_backend web9 if has_web9
+    use_backend web10 if has_web10
+    use_backend web11 if has_web11
+
+    default_backend web2
+
+
+frontend http-in
+    bind *:80
+#    acl has_web6 path_beg /keks
+#    acl has_web1 hdr_end(host) -i dev1.omnismain.com
+    acl has_web2 hdr_end(host) -i dev2.omnismain.com
+    acl has_web2 hdr_end(host) -i test2.lc
+    acl has_web2 hdr_end(host) -i s2.omnismain.com
+    acl has_web3 hdr_end(host) -i dev3.omnismain.com
+    acl has_web4 hdr_end(host) -i test.fix.if.ua
+    acl has_web4 hdr_end(host) -i manage.fix.if.ua
+    acl has_web4 hdr_end(host) -i newfront.fix.if.ua
+    acl has_web5 hdr_end(host) -i front.fix.if.ua
+    acl has_web7 hdr_end(host) -i ssv4.fix.if.ua
+    acl has_web7 hdr_end(host) -i spc4.chickenkiller.com
+    acl has_web8 hdr_end(host) -i front4.fix.if.ua
+    acl has_web9 hdr_end(host) -i dev4.omnismain.com
+    acl has_web10 hdr_end(host) -i dev6.omnismain.com
+    acl has_web11 hdr_end(host) -i dev7.omnismain.com
+
+#    use_backend web1 if has_web1
+    use_backend web2 if has_web2
+    use_backend web3 if has_web3
+    use_backend web4 if has_web4
+    use_backend web5 if has_web5
+#    use_backend web6 if has_web6
+    use_backend web7 if has_web7
+    use_backend web8 if has_web8
+    use_backend web9 if has_web9
+    use_backend web10 if has_web10
+    use_backend web11 if has_web11
+
+    default_backend web2
+
+backend web1
+    reqrep ^([^\ ]*\ /)web1[/]?(.*)     \1\2
+    server web1 192.168.1.52:1111 check
+
+backend web2
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web2 192.168.1.52:80 check
+backend web2ssl
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web2 192.168.1.52:443 check ssl verify none
+
+backend web3
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web3 192.168.1.10:80 check
+
+backend web4
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web4 192.168.1.10:80 check
+backend web4ssl
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web4 192.168.1.10:80 check ssl verify none
+
+backend web5
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web5 192.168.1.10:80 check
+backend web5ssl
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web5ssl 192.168.1.10:443 check ssl verify none
+
+
+backend web6
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web6 192.168.1.51:9282 check
+
+backend web7
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web5 192.168.1.136:80 check
+backend web7ssl
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web5ssl 192.168.1.136:443 check ssl verify none
+
+backend web8
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web5 192.168.1.100:80 check
+
+backend web9
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web6 192.168.1.54:80 check
+
+backend web10
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web6 192.168.1.56:80 check
+
+backend web11
+    reqrep ^([^\ ]*\ /)web2[/]?(.*)     \1\2
+    server web6 192.168.1.57:80 check
+
